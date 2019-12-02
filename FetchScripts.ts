@@ -16,7 +16,8 @@ export async function main(ns: NS) {
         "FetchScripts.js",
         "Process.js",
         "GymTraining.js",
-        "PServerPerformance.js"
+        "PServerPerformance.js",
+        "KillEverything.js"
     ];
 
     for (let i = 0; i < scripts.length; i++) {

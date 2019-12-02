@@ -10,35 +10,35 @@ function forcePorts(ns: NS, s, pr) {
     ns.purchaseTor();
     if (pr >= 1) {
         //@ts-ignore
-        if (!ns.purchaseProgram('BruteSSH.exe')) {
+        if (!ns.fileExists(`BruteSSH.exe`) && !ns.purchaseProgram('BruteSSH.exe')) {
             return false;
         } else
             ns.brutessh(s);
     }
     if (pr >= 2) {
         //@ts-ignore
-        if (!ns.purchaseProgram('FTPCrack.exe')) {
+        if (!ns.fileExists(`FTPCrack.exe`) && !ns.purchaseProgram('FTPCrack.exe')) {
             return false;
         } else
             ns.ftpcrack(s);
     }
     if (pr >= 3) {
         //@ts-ignore
-        if (!ns.purchaseProgram('relaySMTP.exe')) {
+        if (!ns.fileExists(`relaySMTP.exe`) && !ns.purchaseProgram('relaySMTP.exe')) {
             return false;
         } else
             ns.relaysmtp(s);
     }
     if (pr >= 4) {
         //@ts-ignore
-        if (!ns.purchaseProgram('HTTPWorm.exe')) {
+        if (!ns.fileExists(`HTTPWorm.exe`) && !ns.purchaseProgram('HTTPWorm.exe')) {
             return false;
         } else
             ns.httpworm(s);
     }
     if (pr == 5) {
         //@ts-ignore
-        if (!ns.purchaseProgram('SQLInject.exe')) {
+        if (!ns.fileExists(`SQLInject.exe`) && !ns.purchaseProgram('SQLInject.exe')) {
             return false;
         } else
             ns.sqlinject(s);

@@ -14,7 +14,7 @@ export async function main(ns: NS) {
     let DEBUG = ns.args.includes("debug");
     let noHacks = ns.args.includes("nohacks");
     let target = ns.args[0];
-    let deltaArgIndex = ns.args.findIndex(function (arg) { return arg == "-delta"; });
+    let deltaArgIndex = ns.args.findIndex(function (arg) { return arg == "delta"; });
 
     if (ns.getServerMaxMoney(target) == 0) {
         ns.tprint("Tried to target " + target);
@@ -26,7 +26,7 @@ export async function main(ns: NS) {
     let WSI = 0.05;
 
     while (true) {
-        let delta = (deltaArgIndex != -1) ? ns.args[deltaArgIndex + 1] / 1000 : 0.3;
+        let delta = (deltaArgIndex != -1) ? ns.args[deltaArgIndex + 1] / 1000 : 0.375;
         if (ns.getServerMoneyAvailable(target) == ns.getServerMaxMoney(target))
             noHacks = false;
         let HackPercent = ns.hackAnalyzePercent(target);
@@ -44,8 +44,11 @@ export async function main(ns: NS) {
         if (DEBUG) ns.tprint(`${availRAM}GB RAM available, ${reqRAM}GB required per module`);
 
         let blocks = 1;
-        let threads = 1;
+        let nonDepletingThreads = Math.floor(Math.min(95 / HackPercent));
         let modules = Math.floor(availRAM / reqRAM);
+        let baseThreads = 1;
+        let threads = 1;
+        let extraThreads = 0;
 
         if (Math.floor((ttH / delta) / 4) > 30)
             delta = Math.floor((1000 * ttH) / (30 * 4)) / 1000;
@@ -57,12 +60,25 @@ export async function main(ns: NS) {
             return;
         } else if (modules > timeBlocks) {
             blocks = timeBlocks;
-            threads = noHacks ? Math.floor(modules / blocks) : Math.floor(Math.min(95 / HackPercent, Math.floor(modules / blocks)));
+            baseThreads = noHacks ? Math.floor(modules / blocks) : Math.floor(Math.min(95 / HackPercent, Math.floor(modules / blocks)));
+            if (baseThreads < nonDepletingThreads) {
+                extraThreads = modules - baseThreads * blocks;
+                if(DEBUG) ns.tprint(`${extraThreads} extra threads.`);
+            }
         } else
             blocks = modules;
 
         let processes: Process[] = [];
         for (let i = 0; i < blocks; i++) {
+            if (extraThreads > 0) {
+                let addedThreads = Math.min(nonDepletingThreads - baseThreads, extraThreads);
+                threads = baseThreads + addedThreads;
+                if (DEBUG) ns.tprint(`Adding ${addedThreads} on iteration ${i}, ${extraThreads - addedThreads} extra left.`);
+                extraThreads -= addedThreads;
+            }
+            else
+                threads = baseThreads;
+
             let Hargs = {
                 "target": target,
                 "startDelay": (ttW - ttH + delta) + i * (4 * delta),
@@ -99,10 +115,13 @@ export async function main(ns: NS) {
         }
 
         let dcResult = await DCRun(ns, processes);
-        while (!dcResult.success && threads >= 2) {
-            threads = Math.floor(threads * 0.95);
-            if (DEBUG) ns.tprint(`Retrying with ${threads} threads...`);
+        let abort = false;
+        while (!dcResult.success && !abort) {
             processes.forEach(function (proc) {
+                if (proc.threads < 2) {
+                    abort = true;
+                    return;
+                }
                 proc.threads = Math.floor(proc.threads * 0.95);
                 proc.args.threads = Math.floor(proc.args.threads * 0.95);
             });

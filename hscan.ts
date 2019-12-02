@@ -45,7 +45,7 @@ export async function main(ns: NS) {
             `</font><font color=${rootColor}>■ </font>`,
             `</font><font color=${hackColor} title='${ttW}'>[${server.reqHacking}] </font>`,
             `<a class='scan-analyze-link' title='${hoverText}' style='color:${nameColor}'>${name}</a> `,
-            `<font color='GreenYellow'>[${server.totalRAM}/${server.availableRAM}]</font>`,
+            `<font color='GreenYellow'>[${Math.floor(server.availableRAM)}/${server.totalRAM}]</font>`,
             `<font color='fuchisa'>${ctText} </font>`,
             `<font color='${securityColor}'>[${server.secLvl}/${server.minSecLvl}] </font>`,
             `<font color='${moneyColor}' title='${moneyString}'>${moneyPercent}</font>`
